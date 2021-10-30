@@ -77,3 +77,21 @@ test "optional pointer to 0 bit type null value at runtime" {
     var x: ?*EmptyStruct = null;
     try expect(x == null);
 }
+
+test "optional void" {
+    try optionalVoidImpl();
+    comptime try optionalVoidImpl();
+}
+
+fn optionalVoidImpl() !void {
+    try expect(bar(null) == null);
+    try expect(bar({}) != null);
+}
+
+fn bar(x: ?void) ?void {
+    if (x) |_| {
+        return {};
+    } else {
+        return null;
+    }
+}

@@ -313,8 +313,11 @@ pub const DeclGen = struct {
                 try writer.writeAll("){");
                 if (val.castTag(.opt_payload)) |pl| {
                     const payload_val = pl.data;
-                    try writer.writeAll(" .is_null = false, .payload = ");
-                    try dg.renderValue(writer, payload_type, payload_val);
+                    try writer.writeAll(" .is_null = false ");
+                    if (payload_type.isValidVarType(false)) {
+                        try writer.writeAll(", .payload = ");
+                        try dg.renderValue(writer, payload_type, payload_val);
+                    }
                     try writer.writeAll(" }");
                 } else {
                     try writer.writeAll(" .is_null = true }");
@@ -599,8 +602,12 @@ pub const DeclGen = struct {
                 const bw = buffer.writer();
 
                 try bw.writeAll("typedef struct { ");
-                try dg.renderType(bw, child_type);
-                try bw.writeAll(" payload; bool is_null; } ");
+                if (child_type.isValidVarType(false)) {
+                    try dg.renderType(bw, child_type);
+                    try bw.writeAll(" payload;");
+                }
+                try bw.writeAll(" bool is_null; } ");
+
                 const name_index = buffer.items.len;
                 try bw.print("zig_Q_{s};\n", .{typeToCIdentifier(child_type)});
 
