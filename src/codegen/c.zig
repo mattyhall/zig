@@ -268,6 +268,14 @@ pub const DeclGen = struct {
                     const decl = val.castTag(.extern_fn).?.data;
                     try dg.renderDeclName(decl, writer);
                 },
+                .field_ptr => {
+                    const field_ptr = val.castTag(.field_ptr).?.data;
+                    const container_decl = field_ptr.container_ptr.castTag(.decl_ref).?.data;
+                    try writer.writeAll("&");
+                    try dg.renderDeclName(container_decl, writer);
+                    const field_name = container_decl.ty.structFields().keys()[field_ptr.field_index];
+                    try writer.print(".{s}", .{field_name});
+                },
                 else => unreachable,
             },
             .Array => {
